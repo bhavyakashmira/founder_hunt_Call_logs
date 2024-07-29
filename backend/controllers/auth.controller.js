@@ -4,7 +4,22 @@ import bcrypt from "bcryptjs";
 
 export const signUp = async (req, res) => {
     try {
-        const { username, empCode, designation, department, password, role } = req.body;
+        const {
+            username,
+            empCode,
+            designation,
+            department,
+            password,
+            role,
+            ram,
+            systemType,
+            hdd,
+            monitorType,
+            brand,
+            monitorSNo,
+            os,
+            msOffice
+        } = req.body;
 
         const existingUser = await userModel.findOne({ empCode });
         if (existingUser) {
@@ -23,19 +38,33 @@ export const signUp = async (req, res) => {
             empCode,
             designation,
             department,
-            password: hashPassword, 
+            password: hashPassword,
             role,
+            ram,
+            systemType,
+            hdd,
+            monitorType,
+            brand,
+            monitorSNo,
+            os,
+            msOffice
         });
 
         await newUser.save();
-
-        generateTokenandCookie(newUser._id, res);
 
         res.status(201).json({
             _id: newUser._id,
             empCode: newUser.empCode,
             username: newUser.username,
             role: newUser.role,
+            ram: newUser.ram,
+            systemType: newUser.systemType,
+            hdd: newUser.hdd,
+            monitorType: newUser.monitorType,
+            brand: newUser.brand,
+            monitorSNo: newUser.monitorSNo,
+            os: newUser.os,
+            msOffice: newUser.msOffice
         });
 
     } catch (error) {
@@ -44,28 +73,23 @@ export const signUp = async (req, res) => {
     }
 };
 
+
 export const login = async (req, res) => {
     try {
-        const { empCode, password , role } = req.body;
+        const { empCode, password } = req.body;
         const user = await userModel.findOne({ empCode });
-        const ispassword = await bcrypt.compare(password, user?.password || "")
-        if (!user || !ispassword) {
-            return res.json({ message: "user/password does not exists" })
-        }
-        if (user.role != role) {
-            return res.json({ message: "you cannot login as an admin" });
+        const isPasswordCorrect = await bcrypt.compare(password, user?.password || "");
+        if (!user || !isPasswordCorrect) {
+            return res.status(401).json({ message: "Invalid username or password" });
         }
         generateTokenandCookie(user._id, res);
-        res.status(200).json({
-            message:"user logged in"
-        })
+        return res.status(200).json({ message: "User logged in" });
     } catch (error) {
-        console.log(error)
-        res.status(500).json({
-            message: "Invalid user data"
-        })
+        console.error("Error during login:", error);
+        return res.status(500).json({ message: "Internal server error" });
     }
-}
+};
+
 
 
 export const logout = async (req, res) => {

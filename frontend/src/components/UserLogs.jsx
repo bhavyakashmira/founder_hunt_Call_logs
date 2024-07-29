@@ -8,40 +8,86 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-
-const call_logs = 
-    [
-        { sno: "1", status: "done", timestamp: "2024-07-21", issue: "mouse not working" },
-        { sno: "2", status: "pending", timestamp: "2024-07-22", issue: "keyboard not responsive" },
-        { sno: "3", status: "in-progress", timestamp: "2024-07-23", issue: "screen flickering" },
-        { sno: "4", status: "done", timestamp: "2024-07-23", issue: "printer not printing" },
-        { sno: "5", status: "pending", timestamp: "2024-07-24", issue: "wifi connection issue" }
-    ]
-
+import { EllipsisVerticalIcon } from "lucide-react";
+import { useEffect, useState } from "react"
+import axios from "axios";
+import { Button } from "./ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 
 export function Userlogs() {
+    const [getlogs, setgetlogs] = useState([]);
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+    const fetchLogs = async () => {
+        try {
+            const response = await axios.get('/api/query/myquery');
+            const filterlogs = response.data.filter(log => log.status != 'Completed');
+            setgetlogs(filterlogs);
+        } catch (error) {
+            console.error('Error fetching logs:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchLogs();
+    }, [])
+    
+    
+    const handleselfClose = async (id) => {
+        try {
+            const response = await axios.put(`/api/query/updatestatus/${id}`, {
+                newStatus:"Completed"
+            }, {
+                headers: { 
+                    'Content-Type': 'application/json'
+                }
+            });
+            console.log('Success:', response.data);
+            fetchLogs();
+        } catch (error) {
+            console.error('Error:', error);
+        } 
+    }
+
+
+
     return (
-        <Table>
+        <div className="bg-white p-2 rounded-xl" >
+
+            {getlogs.length == 0 ? <h1 className="font-bold justify-center flex p-2" >No Pending Queries</h1> :
+                <ScrollArea>
+                    <Table  >
+
+                    <TableHeader className="bg-gray-600 text-white" >
+                        <TableRow  >
+                            <TableHead className="w-[100px]">SNO</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Issue</TableHead>
+                            <TableHead >Date</TableHead>
+                            <TableHead ></TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {getlogs.map((issue, ind) => (
+                            <TableRow key={ind}>
+                                <TableCell className="font-medium flex items-center gap-1 ">{ind + 1}
+                                    <div className="bg-red-600 rounded-full w-[10px] h-[10px]"></div>
+                                </TableCell>
+                                <TableCell>{issue.status}</TableCell>
+                                <TableCell>{issue.queryText}</TableCell>
+                                <TableCell className="">{issue.createdAt}</TableCell>
+                                <TableCell>  <Button onClick={() => handleselfClose(issue._id)} className="bg-red-500 border rounded-xl">
+                                    Self Close</Button> </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table></ScrollArea>
+                
+                
+            }
             
-            <TableHeader>
-                <TableRow>
-                    <TableHead className="w-[100px]">SNO</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Issue</TableHead>
-                    <TableHead className="text-right">Date</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {call_logs.map((issue) => (
-                    <TableRow key={issue.issue}>
-                        <TableCell className="font-medium">{issue.sno}</TableCell>
-                        <TableCell>{issue.status}</TableCell>
-                        <TableCell>{issue.issue}</TableCell>
-                        <TableCell className="text-right">{issue.timestamp}</TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
+        </div>
+       
     )
 }

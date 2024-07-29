@@ -3,7 +3,6 @@ import queryModel from "../models/query.model.js";
 
 export const createPost = async (req, res) => {
     try {
-
         const { queryText, MajorIssue } = req.body;
         const userId = req.user._id.toString();
         const user = await userModel.findById(userId);
@@ -136,16 +135,20 @@ export const addFeedback = async (req, res) => {
         const { feedback } = req.body;
         const queryId = req.params.id;
         const userId = req.user._id;
-
+       
+     
         if (!feedback){
             return res.status(400).json({ error: "Text field is required" });
         }
         const query = await queryModel.findById(queryId);
+        
         if (!query) {
             return res.status(404).json({ error: "Query not found" });
         }
-        if (query.createdBy != userId) {
-            return res.status(404).json({ error: "Not Authorised" });
+        
+        if (query.createdBy.toString() !== userId.toString()) {
+          
+            return res.status(403).json({ error: "Not Authorised" });
         }
         const comment = { user: userId, text:feedback };
         query.feedback.push(comment);
@@ -160,16 +163,19 @@ export const addFeedback = async (req, res) => {
 
 export const updateStatus = async (req, res) => {
     try {
-        const { queryId, newStatus } = req.body;
+        const queryId = req.params.id;
+        const { newStatus } = req.body;
         const validStatuses = ['Pending', 'In Progress', 'Completed'];
+        const userId = req.user._id.toString();
+        const username = req.user.username;
+
         if (!validStatuses.includes(newStatus)) {
             return res.status(400).json({ error: "Invalid status value" });
         }
-
         const updatedQuery = await queryModel.findByIdAndUpdate(
             queryId,
-            { status: newStatus }
-         
+            { status: newStatus, closedBy: userId, CloserName: req.user.username},
+            { new: true }
         );
         if (!updatedQuery) {
             return res.status(404).json({ error: "Query not found" });
@@ -179,12 +185,11 @@ export const updateStatus = async (req, res) => {
             message: "Query status updated successfully",
             query: updatedQuery
         });
-        
     } catch (error) {
         console.error("Error updating query status:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
     }
-}
+};
 
 export const addremark = async (req, res) => {
     try {

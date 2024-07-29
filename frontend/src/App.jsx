@@ -7,15 +7,15 @@ import ErrorPage from './Pages/ErrorPage';
 
 function App() {
 
- 
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === true;
   return (
     <>
       <Router>
         <Routes>
-          <Route element={<AdminLogin />} path='/login' />
-          <Route element={<AdminDashboard />} path='/dashboard' />
-          <Route element={<UserPage />} path='/' />
-          <Route element={<ErrorPage/>} path='*' />
+          <Route path='/login' element={<AdminLogin /> } />
+          <Route path='/dashboard' element={<AdminDashboard />} />
+          <Route path='/' element={ <UserPage /> } />
+          <Route path='*' element={<ErrorPage />} />
         </Routes>
 
       </Router>

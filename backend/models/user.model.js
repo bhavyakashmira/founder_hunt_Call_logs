@@ -27,6 +27,39 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         required: true
     },
+    
+    ram: {
+        type: String,
+        required: false 
+    },
+    systemType: {
+        type: String,
+        required: false 
+    },
+    hdd: {
+        type: String,
+        required: false 
+    },
+    monitorType: {
+        type: String,
+        required: false 
+    },
+    brand: {
+        type: String,
+        required: false 
+    },
+    monitorSNo: {
+        type: String,
+        required: false 
+    },
+    os: {
+        type: String,
+        required: false 
+    },
+    msOffice: {
+        type: String,
+        required: false 
+    },
     queries: [
         {
             type: mongoose.Schema.Types.ObjectId,

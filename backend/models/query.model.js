@@ -28,6 +28,9 @@ const querySchema = new mongoose.Schema({
         ref: 'User',
         default: null
     },
+    CloserName: {
+        type: String, 
+    },
     responseTime: {
         type: Number, 
         default: null
